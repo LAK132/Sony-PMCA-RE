@@ -46,7 +46,8 @@ class CameraShell(Shell):
    bk.addCommand('lock', Command(self.lockBackup, (), 'Lock protected backup settings'))
    bk.addCommand('unlock', Command(self.unlockBackup, (), 'Unlock protected backup settings'))
    bk.addCommand('stat', Command(self.backupStatus, (), 'Backup status'))
-   bk.addCommand('dump', Command(self.dumpBackup, (0, 1, ['.']), 'Dump the backup file', '[<OUTDIR>]'))
+   bk.addCommand('dump', Command(self.dumpBackup, (0, 1, ['.']), 'Dump the backup file (<OUTDIR>.bin)', '[<OUTDIR>]'))
+   bk.addCommand('dump-txt', Command(self.dumpBackupTxt, (0, 1, ['.']), 'Dump the backup file (<OUTDIR>.bin + <OUTDIR>.txt)', '[<OUTDIR>]'))
    self.addCommand('bk', bk)
 
  def run(self):
@@ -146,8 +147,34 @@ class CameraShell(Shell):
   data = self.backend.getBackupData()
   if os.path.isdir(localPath):
    localPath = os.path.join(localPath, 'backup')
-  with open(localPath, 'wb') as f:
+  binPath = localPath + '.bin'
+  with open(binPath, 'wb') as f:
    f.write(data)
+
+ def dumpBackupTxt(self, localPath='.'):
+  data = self.backend.getBackupData()
+  if os.path.isdir(localPath):
+   localPath = os.path.join(localPath, 'backup')
+  binPath = localPath + '.bin'
+  with open(binPath, 'wb') as binf:
+   binf.write(data)
+
+  with open(binPath, 'rb') as binf:
+   txtPath = localPath + '.txt'
+   with open(txtPath, 'w') as f:
+    def writeHexDump(data, n=16, indent=0):
+     for i in range(0, len(data), n):
+      line = bytearray(data[i:i+n])
+      hex = ' '.join('%02x' % c for c in line)
+      text = ''.join(chr(c) if 0x21 <= c <= 0x7e else '.' for c in line)
+      f.write('%*s%-*s %s\n' % (indent, '', n*3, hex, text))
+    for id, property in BackupFile(binf).listProperties():
+     f.write('id=0x%08x, size=0x%04x, attr=0x%02x:\n' % (id, len(property.data), property.attr))
+     writeHexDump(property.data, indent=2)
+     if property.resetData and property.resetData != property.data:
+      f.write('reset data:\n')
+      writeHexDump(property.resetData, indent=2)
+     f.write('\n')
 
  def tweak(self):
   tweakInterface = TweakInterface(self.backend)
