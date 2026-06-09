@@ -46,6 +46,7 @@ class CameraShell(Shell):
    bk.addCommand('lock', Command(self.lockBackup, (), 'Lock protected backup settings'))
    bk.addCommand('unlock', Command(self.unlockBackup, (), 'Unlock protected backup settings'))
    bk.addCommand('stat', Command(self.backupStatus, (), 'Backup status'))
+   bk.addCommand('dump', Command(self.dumpBackup, (0, 1, ['.']), 'Dump the backup file', '[<OUTDIR>]'))
    self.addCommand('bk', bk)
 
  def run(self):
@@ -140,6 +141,13 @@ class CameraShell(Shell):
  def backupStatus(self):
   status = self.backend.getBackupStatus()
   print(f'Status: {status}')
+
+ def dumpBackup(self, localPath='.'):
+  data = self.backend.getBackupData()
+  if os.path.isdir(localPath):
+   localPath = os.path.join(localPath, 'backup')
+  with open(localPath, 'wb') as f:
+   f.write(data)
 
  def tweak(self):
   tweakInterface = TweakInterface(self.backend)
