@@ -100,7 +100,7 @@ class BackupFile:
 
  def _readSubsystemTable(self, i):
   if i >= self.header.numSubsystems:
-   raise Exception('Invalid subsystem id')
+   raise Exception(f'Invalid subsystem id ({i} >= {self.header.numSubsystems})')
   s = SubsystemTableEntry.unpack(self.file, self.subsystemTableOffset + i * SubsystemTableEntry.size)
   if s.ptr + s.numProperties > self.header.numProperties:
    raise Exception('Invalid subsystem')
@@ -110,7 +110,7 @@ class BackupFile:
   subsystem = self._readSubsystemTable(id >> 16)
   i = id & 0xffff
   if i >= subsystem.numProperties:
-   raise Exception('Invalid property id')
+   raise Exception(f'Invalid property id ({i} >= {subsystem.numProperties})')
   return self.propertyTableOffset + (subsystem.ptr + i) * self.PropertyTableEntry.size
 
  def _readPropertyTable(self, id):
@@ -130,7 +130,7 @@ class BackupFile:
   offset = property.ptr & 0xffffff
 
   if offset < self.header.dataOffset:
-   raise Exception('Invalid offset')
+   raise Exception(f'Invalid offset ({offset} < {self.header.dataOffset})')
 
   if size == 0xff:
    op = OversizeProperty.unpack(self.file, offset)
