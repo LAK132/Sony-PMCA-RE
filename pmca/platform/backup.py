@@ -27,12 +27,12 @@ class BackupProp(BaseBackupProp):
  def read(self):
   data = self.dataInterface.readProp(self.id)
   if len(data) != self.size:
-   raise Exception('Wrong size')
+   raise Exception(f'Wrong size (expected {self.size} got {len(data)})')
   return data
 
  def write(self, data):
   if len(data) != self.size:
-   raise Exception('Wrong size')
+   raise Exception(f'Wrong size (expected {self.size} got {len(data)})')
   self.dataInterface.writeProp(self.id, data)
 
 
@@ -46,7 +46,7 @@ class CompoundBackupProp(BaseBackupProp):
 
  def write(self, data):
   if len(data) != self.size:
-   raise Exception('Wrong size')
+   raise Exception(f'Wrong size (expected {self.size} got {len(data)})')
   for prop in self._props:
    prop.write(data[:prop.size])
    data = data[prop.size:]

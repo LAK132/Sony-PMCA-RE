@@ -37,10 +37,15 @@ class BackupTweak(BaseTweak):
   try:
    data = self.read()
    if self._checkValue:
-    return data in [self.onValue(), self.offValue()]
+    if data in [self.onValue(), self.offValue()]:
+     return True
+    else:
+     print(f'{self._name} not available (bad value ({data}))')
+     return False
    else:
     return True
-  except:
+  except Exception as e:
+   print(f'{self._name} not available (exception {e})')
    return False
 
  def enabled(self):
