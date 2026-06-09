@@ -45,6 +45,7 @@ class CameraShell(Shell):
    bk.addCommand('s', Command(self.syncBackup, (), 'Sync backup data to disk'))
    bk.addCommand('lock', Command(self.lockBackup, (), 'Lock protected backup settings'))
    bk.addCommand('unlock', Command(self.unlockBackup, (), 'Unlock protected backup settings'))
+   bk.addCommand('stat', Command(self.backupStatus, (), 'Backup status'))
    self.addCommand('bk', bk)
 
  def run(self):
@@ -135,6 +136,10 @@ class CameraShell(Shell):
 
  def unlockBackup(self):
   self.backend.setBackupProtection(False)
+
+ def backupStatus(self):
+  status = self.backend.getBackupStatus()
+  print(f'Status: {status}')
 
  def tweak(self):
   tweakInterface = TweakInterface(self.backend)
