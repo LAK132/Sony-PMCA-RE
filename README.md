@@ -27,6 +27,14 @@ pip install -r requirements.txt  # to install the dependencies
 ./pmca-gui.py  # for the gui application
 ```
 
+If you run into permission issues, you may need to add some udev rules. On NixOS this can be done by adding the following to your configuration:
+```nix
+services.udev.extraRules = ''
+	# sony devices
+	SUBSYSTEM=="usb", ATTR{idVendor}=="054c", MODE="0666"
+'';
+```
+
 ## Usage
 There are three main modes of interfacing with a camera:
 
