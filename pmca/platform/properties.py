@@ -34,6 +34,21 @@ class HexBackupProperty(BackupProperty):
   return binascii.hexlify(self._read()).decode('ascii').lstrip('0')
 
 
+class IntBackupProperty(BackupProperty):
+ def get(self):
+  data = self._read()
+  match len(data):
+   case 1:
+    return parse8(data)
+   case 2:
+    return parse16le(data)
+   case 4:
+    return parse32le(data)
+   case 8:
+    return parse64le(data)
+  raise Exception(f'Invalid data length ({len(data)})')
+
+
 class BackupRegionProperty(Property):
  def __init__(self, backend):
   super(BackupRegionProperty, self).__init__(backend)
@@ -62,6 +77,7 @@ class PropertyInterface:
    self.addProp('modelCode', 'Product code', HexBackupProperty(backend, 'modelCode'))
    self.addProp('serialNumber', 'Serial number', HexBackupProperty(backend, 'serialNumber'))
    self.addProp('backupRegion', 'Backup region', BackupRegionProperty(backend))
+   self.addProp('uptime', 'Uptime', IntBackupProperty(backend, 'uptime'))
   if isinstance(backend, FilePlatformBackend):
    self.addProp('firmwareVersion', 'Firmware version', FirmwareVersionProperty(backend))
   if isinstance(backend, BackupPlatformBackend):

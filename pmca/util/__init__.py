@@ -3,6 +3,18 @@
 import struct
 from collections import namedtuple
 
+def parse64le(data):
+ return struct.unpack('<Q', data)[0]
+
+def dump64le(value):
+ return struct.pack('<Q', value)
+
+def parse64be(data):
+ return struct.unpack('>Q', data)[0]
+
+def dump64be(value):
+ return struct.pack('>Q', value)
+
 def parse32le(data):
  return struct.unpack('<I', data)[0]
 

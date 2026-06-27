@@ -174,6 +174,7 @@ class BackupInterface:
   self.addProp('palNtsc', BackupProp(dataInterface, 0x010704fd, 1))
   self.addProp('language', CompoundBackupProp(dataInterface, [(0x010d008f + i, 1) for i in range(35)]))
   self.addProp('usbAppInstaller', BackupProp(dataInterface, 0x01640001, 1))
+  self.addProp('uptime', BackupProp(dataInterface, 0x01070000, 8))
 
  def addProp(self, name, prop):
   self._props[name] = prop
