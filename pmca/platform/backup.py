@@ -200,6 +200,8 @@ class BackupInterface:
   self.addProp('language', CompoundBackupProp(dataInterface, [(0x010d008f + i, 1) for i in range(35)]))
   self.addProp('usbAppInstaller', BackupProp(dataInterface, 0x01640001, 1))
   self.addProp('uptime', BackupProp(dataInterface, 0x01070000, 8))
+  self.addProp('photographer', BackupProp(dataInterface, 0x02cf0bd1, 0x2f))
+  self.addProp('copyright', BackupProp(dataInterface, 0x02cf0bd2, 0x2f))
 
  def addProp(self, name, prop):
   self._props[name] = prop
