@@ -1,6 +1,7 @@
 """A parser for Backup.bin, the settings file used on Sony cameras"""
 
 from collections import namedtuple
+from enum import IntEnum
 
 from ..util import *
 
@@ -50,6 +51,33 @@ VariableSizeProperty = Struct('VariableSizeProperty', [
 BackupPropertyPtr = namedtuple('BackupPropertyPtr', 'attr, size, maxSize, ptr')
 
 BackupProperty = namedtuple('BackupProperty', 'attr, data, resetData')
+
+class BackupPropertyAttr(IntEnum):
+ READ_ONLY  = 0x01
+ """
+ property is read only, cannot be written with Backup_write().
+ """
+
+ PROTECTED  = 0x02
+ """
+ property is protected, won't be changed by Backup_protect().
+ """
+
+ CALLBACKS  = 0x08
+ """
+ callbacks are triggered when this property is written with Backup_write().
+ """
+
+ HAS_RESET  = 0x74
+ """
+ property can be reset with Backup_reset().
+ """
+
+ ARRAY_DATA = 0x80
+ """
+ property data is an array that can be read with Backup_read_setting_attr().
+ there are ord(backupProperties[0x3e000c].data)+1 elements in the array.
+ """
 
 class BackupFile:
  def __init__(self, file):
@@ -155,18 +183,9 @@ class BackupFile:
   data = self.file.read(p.size)
   resetData = None
 
-  if p.attr & 0x01:# property is read only, cannot be written with Backup_write()
-   pass
-  if p.attr & 0x02:# property is protected, won't be changed by Backup_protect()
-   pass
-  if p.attr & 0x08:# callbacks are triggered when this property is written with Backup_write()
-   pass
-  if p.attr & 0x74:# property can be reset with Backup_reset()
+  if p.attr & BackupPropertyAttr.HAS_RESET:
    self.file.seek(p.ptr + p.maxSize)
    resetData = self.file.read(p.size)
-  if p.attr & 0x80:# property data is an array that can be read with Backup_read_setting_attr()
-   # there are ord(backupProperties[0x3e000c].data)+1 elements in the array
-   pass
 
   return BackupProperty(p.attr, data, resetData)
 
