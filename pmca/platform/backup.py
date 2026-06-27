@@ -25,7 +25,7 @@ def formatBackupStr(file):
   resetData = ''
   if prop.resetData and prop.resetData != prop.data:
    resetData = 'reset data:\n' + formatHexDump(prop.resetData, indent=2)
-  return ('id=0x%08x, size=0x%04x, attr=0x%02x%s:\n' % (id, len(prop.data), prop.attr, extra)) + formatHexDump(prop.data, indent=2) + resetData + '\n'
+  return ('src=0x%08x, subsys=0x%04x, index=0x%04x\nid=0x%08x, size=0x%04x, attr=0x%02x%s:\n' % (prop.src, (id >> 16), (id & 0xffff), id, len(prop.data), prop.attr, extra)) + formatHexDump(prop.data, indent=2) + resetData + '\n'
  return ''.join([formatBackupPropStr(id, prop) for id, prop in BackupFile(file).listProperties()])
 
 

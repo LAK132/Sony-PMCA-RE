@@ -48,9 +48,9 @@ VariableSizeProperty = Struct('VariableSizeProperty', [
  ('maxSize', Struct.INT16),
 ])
 
-BackupPropertyPtr = namedtuple('BackupPropertyPtr', 'attr, size, maxSize, ptr')
+BackupPropertyPtr = namedtuple('BackupPropertyPtr', 'attr, size, maxSize, ptr, src')
 
-BackupProperty = namedtuple('BackupProperty', 'attr, data, resetData')
+BackupProperty = namedtuple('BackupProperty', 'attr, data, resetData, src')
 
 class BackupPropertyAttr(IntEnum):
  READ_ONLY  = 0x01
@@ -68,7 +68,11 @@ class BackupPropertyAttr(IntEnum):
  callbacks are triggered when this property is written with Backup_write().
  """
 
- HAS_RESET  = 0x74
+ HAS_RESET_1 = 0x04
+ HAS_RESET_2 = 0x10
+ HAS_RESET_3 = 0x20
+ HAS_RESET_4 = 0x40
+ # HAS_RESET   = HAS_RESET_1 | HAS_RESET_2 | HAS_RESET_3 | HAS_RESET_4
  """
  property can be reset with Backup_reset().
  """
@@ -174,7 +178,7 @@ class BackupFile:
   if size > maxSize or offset + maxSize > self.size:
    raise Exception('Invalid size')
 
-  return BackupPropertyPtr(property.attr, size, maxSize, offset)
+  return BackupPropertyPtr(property.attr, size, maxSize, offset, property.ptr)
 
  def getProperty(self, id):
   p = self._readProperty(id)
@@ -183,11 +187,15 @@ class BackupFile:
   data = self.file.read(p.size)
   resetData = None
 
-  if p.attr & BackupPropertyAttr.HAS_RESET:
+  if p.attr & BackupPropertyAttr.ARRAY_DATA:
+   # attempting to read the reset data of an array just causes it to read the
+   # memory of following properties
+   pass
+  elif p.attr & (BackupPropertyAttr.HAS_RESET_1 | BackupPropertyAttr.HAS_RESET_2 | BackupPropertyAttr.HAS_RESET_3 | BackupPropertyAttr.HAS_RESET_4):
    self.file.seek(p.ptr + p.maxSize)
    resetData = self.file.read(p.size)
 
-  return BackupProperty(p.attr, data, resetData)
+  return BackupProperty(p.attr, data, resetData, p.src)
 
  def setProperty(self, id, data):
   p = self._readProperty(id)
