@@ -10,7 +10,6 @@ from ..io import *
 from ..shell import *
 from ..shell.interactive import *
 from ..shell.parser import *
-from ..commands.backup import formatBackupStr
 
 
 class CameraShell(Shell):

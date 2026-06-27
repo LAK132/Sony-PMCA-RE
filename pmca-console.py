@@ -2,7 +2,7 @@
 """A command line application to install apps on Android-enabled Sony cameras"""
 import argparse
 
-from pmca.commands.backup import *
+from pmca.platform.backup import formatBackupStr
 from pmca.commands.market import *
 from pmca.commands.usb import *
 from pmca import spk
@@ -95,7 +95,7 @@ def main():
  elif args.command == 'wifi':
   wifiCommand(args.write, args.file, args.multi, args.driver)
  elif args.command == 'print_backup':
-  printBackupCommand(args.backupFile)
+  print(formatBackupStr(args.backupFile))
  else:
   parser.print_usage()
 

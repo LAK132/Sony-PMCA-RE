@@ -5,6 +5,30 @@ import io
 from ..backup import *
 from ..util import *
 
+
+def formatBackupStr(file):
+ bi = BackupInterface(None)
+ def formatBackupPropStr(id, prop):
+  def formatHexDump(data, n=16, indent=0):
+   def formatLine(i):
+    line = bytearray(data[i:i+n])
+    hex = ' '.join('%02x' % c for c in line)
+    text = ''.join(chr(c) if 0x21 <= c <= 0x7e else '.' for c in line)
+    return '%*s%-*s %s\n' % (indent, '', n*3, hex, text)
+   return ''.join([formatLine(i) for i in range(0, len(data), n)])
+  extra = '|'.join([attr.name for attr in BackupPropertyAttr if prop.attr & attr])
+  if len(extra) != 0:
+   extra = ' (' + extra + ')'
+  p = bi.findProp(id, len(prop.data))
+  if p is not None:
+   extra = extra + f', name="{p[0]}"'
+  resetData = ''
+  if prop.resetData and prop.resetData != prop.data:
+   resetData = 'reset data:\n' + formatHexDump(prop.resetData, indent=2)
+  return ('id=0x%08x, size=0x%04x, attr=0x%02x%s:\n' % (id, len(prop.data), prop.attr, extra)) + formatHexDump(prop.data, indent=2) + resetData + '\n'
+ return ''.join([formatBackupPropStr(id, prop) for id, prop in BackupFile(file).listProperties()])
+
+
 class BaseBackupProp(abc.ABC):
  def __init__(self, dataInterface, size):
   self.dataInterface = dataInterface
@@ -163,6 +187,7 @@ class BackupInterface:
  def __init__(self, dataInterface):
   self.dataInterface = dataInterface
   self._props = OrderedDict()
+  self._propsById = dict()
 
   self.addProp('androidPlatformVersion', BackupProp(dataInterface, 0x01660024, 8))
   self.addProp('modelCode', BackupProp(dataInterface, 0x00e70000, 5))
@@ -178,6 +203,14 @@ class BackupInterface:
 
  def addProp(self, name, prop):
   self._props[name] = prop
+  if isinstance(prop, BackupProp):
+   self._propsById[(prop.id, prop.size)] = (name, prop)
+  if isinstance(prop, CompoundBackupProp):
+   for p in prop._props:
+    self._propsById[(p.id, prop.size)] = (name, p)
+
+ def findProp(self, id, len):
+  return self._propsById.get((id, len))
 
  def readProp(self, name):
   return self._props[name].read()
