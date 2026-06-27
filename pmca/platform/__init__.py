@@ -10,6 +10,7 @@ from ..io import *
 from ..shell import *
 from ..shell.interactive import *
 from ..shell.parser import *
+from ..commands.backup import formatBackupStr
 
 
 class CameraShell(Shell):
@@ -162,19 +163,7 @@ class CameraShell(Shell):
   with open(binPath, 'rb') as binf:
    txtPath = localPath + '.txt'
    with open(txtPath, 'w') as f:
-    def writeHexDump(data, n=16, indent=0):
-     for i in range(0, len(data), n):
-      line = bytearray(data[i:i+n])
-      hex = ' '.join('%02x' % c for c in line)
-      text = ''.join(chr(c) if 0x21 <= c <= 0x7e else '.' for c in line)
-      f.write('%*s%-*s %s\n' % (indent, '', n*3, hex, text))
-    for id, property in BackupFile(binf).listProperties():
-     f.write('id=0x%08x, size=0x%04x, attr=0x%02x:\n' % (id, len(property.data), property.attr))
-     writeHexDump(property.data, indent=2)
-     if property.resetData and property.resetData != property.data:
-      f.write('reset data:\n')
-      writeHexDump(property.resetData, indent=2)
-     f.write('\n')
+    f.write(formatBackupStr(binf))
 
  def tweak(self):
   tweakInterface = TweakInterface(self.backend)
