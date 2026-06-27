@@ -77,8 +77,10 @@ class PropertyInterface:
    self.addProp('modelCode', 'Product code', HexBackupProperty(backend, 'modelCode'))
    self.addProp('serialNumber', 'Serial number', HexBackupProperty(backend, 'serialNumber'))
    self.addProp('backupRegion', 'Backup region', BackupRegionProperty(backend))
-   self.addProp('photographer', 'Photographer', StrBackupProperty(backend, 'photographer'))
-   self.addProp('copyright', 'Copyright', StrBackupProperty(backend, 'copyright'))
+   self.addProp('photographer1', 'Photographer', StrBackupProperty(backend, 'photographer1'))
+   self.addProp('photographer2', 'Photographer', StrBackupProperty(backend, 'photographer2'))
+   self.addProp('copyright1', 'Copyright', StrBackupProperty(backend, 'copyright1'))
+   self.addProp('copyright2', 'Copyright', StrBackupProperty(backend, 'copyright2'))
    self.addProp('uptime', 'Uptime', IntBackupProperty(backend, 'uptime'))
   if isinstance(backend, FilePlatformBackend):
    self.addProp('firmwareVersion', 'Firmware version', FirmwareVersionProperty(backend))
