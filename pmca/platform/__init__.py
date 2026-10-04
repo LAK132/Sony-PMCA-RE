@@ -3,6 +3,7 @@ import posixpath
 
 from .android import *
 from .backend import *
+from .backend.senser import SenserPlatformBackend
 from .backup import *
 from .properties import *
 from .tweaks import *
@@ -25,6 +26,9 @@ class CameraShell(Shell):
   if isinstance(self.backend, FilePlatformBackend):
    self.addCommand('push', Command(self.push, (2,), 'Copy the specified file from the computer to the device', '<LOCAL> <REMOTE>'))
    self.addCommand('pull', Command(self.pull, (1, 1, ['.']), 'Copy the specified file from the device to the computer', '<REMOTE> [<LOCAL>]'))
+
+  if isinstance(self.backend, SenserPlatformBackend):
+   self.addCommand('jpull', Command(self.jpull, (1, 1, ['.']), 'Copy the specified file from the device to the computer (abuses JIRITSU_GET_FILE exploit)', '<REMOTE> [<LOCAL>]'))
 
   if isinstance(self.backend, BootloaderPlatformBackend):
    self.addCommand('bootloader', Command(self.bootloader, (0, 1, ['.']), 'Dump the boot loader', '[<OUTDIR>]'))
@@ -91,6 +95,13 @@ class CameraShell(Shell):
    print('Writing to %s...' % f.name)
    p = ProgressFile(f)
    self.backend.readFile(path, p, p.setTotal)
+
+ def jpull(self, path, localPath='.'):
+  if os.path.isdir(localPath):
+   localPath = os.path.join(localPath, posixpath.basename(path))
+  with self._openOutputFile(localPath) as f:
+   print('Writing to %s...' % f.name)
+   self.backend.dev.jiritsuGetFile(path, f)
 
  def bootloader(self, localPath='.'):
   if not os.path.isdir(localPath):

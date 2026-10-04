@@ -973,6 +973,8 @@ class SonySenserCamera(object):
  SONY_ADJUST_BACKUP_PDT_STAT = (0x603, 6)
  SONY_ADJUST_BACKUP_ID1 = (0x603, 15)
 
+ SONY_ADJUST_JIRITSU_GET_FILE = (0x1001, 0x4008)
+
  SONY_FILE_CONTROL_WRITE = 1
  SONY_FILE_CONTROL_READ = 2
  SONY_FILE_CONTROL_DELETE = 3
@@ -1015,6 +1017,18 @@ class SonySenserCamera(object):
 
  def readFile(self, filename, outFile=None):
   return self._sendFileControlPacket(self.SONY_FILE_CONTROL_READ, filename, b'', outFile)
+
+ def jiritsuGetFile(self, filename, outFile=None):
+  filename = b'\x01\x00\x00/../..' + filename.encode('latin1')
+  data = self._sendAdjustControlPacket(*self.SONY_ADJUST_JIRITSU_GET_FILE, filename)
+  handler_res = parse32le(data[:4])
+  if handler_res != 0:
+   raise Exception('File handler error %d' % handler_res)
+  if outFile is None:
+   return data[4:]
+  else:
+   outFile.write(data[4:])
+   return None
 
  def writeFile(self, filename, data):
   self._sendFileControlPacket(self.SONY_FILE_CONTROL_WRITE, filename, data)
